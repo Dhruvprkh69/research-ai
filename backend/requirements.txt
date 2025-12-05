@@ -16,7 +16,7 @@ langchain-google-genai==3.2.0
 
 # Vector store and embeddings
 sentence-transformers==2.6.1
-faiss-cpu==1.7.4
+faiss-cpu==1.13.1
 
 # PDF processing
 PyPDF2==3.0.1
