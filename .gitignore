@@ -34,6 +34,11 @@ build/
 .env.test.local
 .env.production.local
 
+# Credentials (DO NOT COMMIT!)
+SUPABASE_CREDENTIALS.md
+*_CREDENTIALS.md
+*_SECRETS.md
+
 # IDE
 .vscode/
 .idea/

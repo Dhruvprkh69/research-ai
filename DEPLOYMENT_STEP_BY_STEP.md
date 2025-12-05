@@ -9,8 +9,9 @@ Before starting, make sure you have:
 - [ ] GitHub account (free)
 - [ ] Vercel account (free, sign up with GitHub)
 - [ ] Render account (free, sign up with GitHub)
-- [ ] Supabase project (already have)
+- [ ] Supabase account (free)
 - [ ] Code ready in your local machine
+- [ ] Google Gemini API key (for AI features)
 
 ---
 
@@ -136,35 +137,103 @@ Before starting, make sure you have:
 
 ---
 
-## 🔵 **PHASE 2: Supabase Auth Setup (15 minutes)**
+## 🔵 **PHASE 2: Supabase Setup (20 minutes)**
 
-### Step 2.1: Enable Authentication in Supabase
+### Step 2.1: Create New Supabase Project
 
 1. **Go to Supabase Dashboard:**
    - https://supabase.com/dashboard
    - Login karo
-   - Apna project select karo
 
-2. **Enable Authentication:**
-   - Left sidebar mein **"Authentication"** click karo
-   - Top pe **"Providers"** tab pe jao
-   - **"Email"** provider ko **ON** karo (toggle button)
-   - Scroll down, **"Enable email confirmations"** ko **OFF** karo (testing ke liye)
-   - **"Save"** button click karo
+2. **Create New Project:**
+   - Top right corner pe **"New Project"** button click karo
+   - Ya **"New"** → **"Project"** select karo
 
-3. **Get API Keys:**
-   - Left sidebar mein **"Settings"** → **"API"** click karo
-   - **Copy these values:**
-     ```
-     Project URL: https://qefbqgljasjybwwtcqmv.supabase.co
-     anon public key: (long string starting with eyJ...)
-     service_role key: (long string - KEEP THIS SECRET!)
-     ```
-   - **Note kar lo ya save kar lo** - baad mein use karenge
+3. **Fill Project Details:**
+   ```
+   Organization: (Select your organization)
+   
+   Name: research-ai (ya kuch clear naam - example: research-ai-production)
+   
+   Database Password: (Strong password set karo - IMPORTANT: SAVE KAR LO!)
+   - Minimum 12 characters
+   - Mix of letters, numbers, symbols
+   - Example: MySecurePass123!@#
+   
+   Region: (Closest region select karo)
+   - India ke liye: Southeast Asia (Singapore)
+   - US ke liye: US East / US West
+   
+   Pricing Plan: Free (default)
+   ```
+
+4. **Create Project:**
+   - **"Create new project"** button click karo
+   - Wait karo (2-3 minutes lag sakta hai)
+   - Success message aayega: **"Your project is ready"**
+
+5. **⚠️ IMPORTANT - Save These Details:**
+   - **Database Password** - Save kar lo (connection string mein use hoga)
+   - Project name note kar lo (identification ke liye)
 
 ---
 
-### Step 2.2: Create Database Tables
+### Step 2.2: Get API Keys and Connection Details
+
+1. **Go to Settings:**
+   - Left sidebar mein **"Settings"** → **"API"** click karo
+
+2. **Copy API Keys:**
+   - **Project URL:** Copy karo (example: `https://xxxxx.supabase.co`)
+   - **anon public key:** Copy karo (long string starting with `eyJ...`)
+   - **service_role key:** Copy karo (long string - ⚠️ KEEP THIS SECRET!)
+   
+   **📝 Save these in a text file:**
+   ```
+   SUPABASE_PROJECT_URL = https://xxxxx.supabase.co
+   SUPABASE_ANON_KEY = eyJhbGci...
+   SUPABASE_SERVICE_KEY = eyJhbGci... (SECRET!)
+   ```
+
+3. **Get Database Connection String:**
+   - Left sidebar mein **"Settings"** → **"Database"** click karo
+   - Scroll down to **"Connection string"** section
+   - **"URI"** tab select karo
+   - Copy the connection string:
+     ```
+     postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
+     ```
+   - **⚠️ Replace `[YOUR-PASSWORD]` with your actual database password**
+   - **⚠️ If password has special characters, URL encode them:**
+     - `@` → `%40`
+     - `#` → `%23`
+     - `%` → `%25`
+   
+   **📝 Save this:**
+   ```
+   DATABASE_URL = postgresql://postgres:YourPassword@db.xxxxx.supabase.co:5432/postgres
+   ```
+
+---
+
+### Step 2.3: Enable Authentication
+
+1. **Go to Authentication:**
+   - Left sidebar mein **"Authentication"** click karo
+   - Top pe **"Providers"** tab pe jao
+
+2. **Enable Email Provider:**
+   - **"Email"** provider ko **ON** karo (toggle button)
+   - Scroll down to **"Email Auth Settings"**
+   - **"Enable email confirmations"** ko **OFF** karo (testing ke liye - baad mein ON kar sakte ho)
+   - **"Save"** button click karo
+
+3. **Verify:**
+   - Email provider **"Enabled"** dikhna chahiye
+
+---
+
+### Step 2.4: Create Database Tables
 
 1. **Go to Supabase SQL Editor:**
    - Left sidebar mein **"SQL Editor"** click karo
@@ -174,14 +243,14 @@ Before starting, make sure you have:
 
 ```sql
 -- Create papers table
-CREATE TABLE IF NOT EXISTS public.papers (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    filename TEXT NOT NULL,
-    summary TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+    CREATE TABLE IF NOT EXISTS public.papers (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+        filename TEXT NOT NULL,
+        summary TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
 
 -- Create questions table
 CREATE TABLE IF NOT EXISTS public.questions (
@@ -208,7 +277,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_user_id ON public.questions(user_id);
 ALTER TABLE public.papers ENABLE ROW LEVEL SECURITY;
 
 -- Enable RLS on questions table
-ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for papers (users can only see their own papers)
 CREATE POLICY "Users can view own papers"
@@ -241,6 +310,26 @@ CREATE POLICY "Users can insert own questions"
 
 6. **Verify tables created:**
    - Left sidebar → **"Table Editor"** → Check if `papers` and `questions` tables dikh rahe hain
+
+---
+
+### Step 2.5: Important Notes
+
+**📝 Save All These Details in a Safe Place:**
+
+```
+✅ Supabase Project Name: research-ai
+✅ Project URL: https://xxxxx.supabase.co
+✅ Database Password: (jo create karte waqt diya)
+✅ anon public key: eyJhbGci...
+✅ service_role key: eyJhbGci... (SECRET!)
+✅ Database Connection String: postgresql://postgres:Password@db.xxxxx.supabase.co:5432/postgres
+```
+
+**⚠️ Important:**
+- Service role key ko **NEVER** frontend mein use karo (sirf backend)
+- Database password ko URL encode karo agar special characters hain
+- Sab details save kar lo - baad mein use karenge
 
 ---
 
@@ -291,11 +380,10 @@ CREATE POLICY "Users can insert own questions"
    
    ```
    Name: NEXT_PUBLIC_SUPABASE_URL
-   Value: https://qefbqgljasjybwwtcqmv.supabase.co
-   (Yeh apna Supabase Project URL hai)
+   Value: (Yeh woh Project URL hai jo Step 2.2 mein copy kiya - example: https://xxxxx.supabase.co)
    
    Name: NEXT_PUBLIC_SUPABASE_ANON_KEY
-   Value: (Yeh woh anon public key hai jo Step 2.1 mein copy kiya tha)
+   Value: (Yeh woh anon public key hai jo Step 2.2 mein copy kiya tha)
    
    Name: NEXT_PUBLIC_API_URL
    Value: (Abhi skip karo, backend deploy hone ke baad add karenge)
@@ -388,14 +476,15 @@ Agar deployment mein error aaye, to:
    - Har variable ke liye separately add karo:
    
    ```
-   SUPABASE_URL = https://qefbqgljasjybwwtcqmv.supabase.co
+   SUPABASE_URL = (Yeh woh Project URL hai jo Step 2.2 mein copy kiya - example: https://xxxxx.supabase.co)
    
-   SUPABASE_SERVICE_KEY = (Yeh woh service_role key hai jo Step 2.1 mein copy kiya tha - SECRET!)
+   SUPABASE_SERVICE_KEY = (Yeh woh service_role key hai jo Step 2.2 mein copy kiya - SECRET!)
    
-   DATABASE_URL = postgresql://postgres:[YOUR-PASSWORD]@db.qefbqgljasjybwwtcqmv.supabase.co:5432/postgres
-   (Yeh woh connection string hai jo pehle use kiya tha)
+   DATABASE_URL = (Yeh woh connection string hai jo Step 2.2 mein banaya - with actual password)
+   Example: postgresql://postgres:YourPassword@db.xxxxx.supabase.co:5432/postgres
+   ⚠️ Remember: Special characters ko URL encode karo!
    
-   GOOGLE_API_KEY = (Yeh woh Gemini API key hai)
+   GOOGLE_API_KEY = (Yeh woh Gemini API key hai jo pehle se use kar rahe ho)
    
    PORT = 10000
    (Render automatically PORT set karta hai, but explicitly bhi set kar sakte ho)
