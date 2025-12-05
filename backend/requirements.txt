@@ -6,13 +6,13 @@ python-multipart==0.0.9
 requests==2.31.0
 xmltodict==0.13.0
 
-# Google AI - compatible with langchain-google-genai
-google-generativeai>=0.9.0
+# Google AI
+google-generativeai==0.8.5
 
 # LangChain - pinned to compatible versions to avoid dependency resolution delays
 langchain==0.3.27
 langchain-community==0.3.27
-langchain-google-genai==3.2.0
+langchain-google-genai>=2.0.0,<3.0.0
 
 # Vector store and embeddings
 sentence-transformers==2.6.1
